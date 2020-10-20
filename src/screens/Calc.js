@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import {connect} from 'react-redux';
 
 class Calc extends Component {
   constructor() {
@@ -14,7 +15,6 @@ class Calc extends Component {
     this.state = {
       result: '',
       calc: '',
-      history: [],
     };
   }
 
@@ -85,12 +85,11 @@ class Calc extends Component {
   }
 
   addHistory() {
-    const {calc} = this.state;
-    this.setState({history: [...this.state.history, calc]});
-  }
-
-  componentDidUpdate() {
-    console.log(this.state.history);
+    const {calc, result} = this.state;
+    // this.setState({history: [...this.state.history, calc]});
+    if (calc !== '') {
+      this.props.addHistory(calc);
+    }
   }
 
   render() {
@@ -98,13 +97,14 @@ class Calc extends Component {
       <View style={styles.container}>
         <View style={styles.containerResult}>
           <ScrollView style={styles.container}>
-            {this.state.history.map((history, index) => (
-              <View key={index}>
-                <Text>{history}</Text>
-                <Text>{eval(history)}</Text>
+            {this.props.history.map((history, index) => (
+              <View key={index} style={styles.history}>
+                <Text style={styles.historyCalc}>{history}</Text>
+                <Text style={styles.historyResult}>{eval(history)}</Text>
               </View>
             ))}
           </ScrollView>
+          <Text>{this.props.counter}</Text>
           <Text style={styles.number}>{this.state.calc}</Text>
           <Text style={styles.result}>{this.state.result}</Text>
         </View>
@@ -221,7 +221,28 @@ class Calc extends Component {
   }
 }
 
-export default Calc;
+const mapStateToProps = (state) => {
+  return {
+    history: state.history,
+  };
+};
+
+const mapDispatchToProps = (dispatch) => {
+  return {
+    addHistory: (data) =>
+      dispatch({
+        type: 'ADD',
+        data: data,
+      }),
+    clearHistory: () =>
+      dispatch({
+        type: 'CLEAR',
+      }),
+  };
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(Calc);
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -255,5 +276,17 @@ const styles = StyleSheet.create({
     fontSize: 36,
     fontWeight: '600',
     textAlign: 'right',
+  },
+  history: {
+    padding: 8,
+    borderBottomWidth: 1,
+    margin: 8,
+  },
+  historyCalc: {
+    fontSize: 12,
+  },
+  historyResult: {
+    fontSize: 16,
+    color: '#1f1f1f',
   },
 });
